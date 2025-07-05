@@ -1,0 +1,381 @@
+<!-- agentapp/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keerthi MNC's Internal Research Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.assistant {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e5e7eb;
+        }
+
+        .input-area {
+            padding: 30px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .input-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .query-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .query-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: white;
+        }
+
+        .submit-btn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .welcome-message {
+            text-align: center;
+            color: #6b7280;
+            font-size: 1.1rem;
+            margin-top: 50px;
+        }
+
+        .suggestions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .suggestion-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .suggestion-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-color: #6366f1;
+        }
+
+        .suggestion-card h4 {
+            color: #374151;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .suggestion-card p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-dots {
+            display: inline-block;
+        }
+
+        .loading-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6366f1;
+            margin: 0 2px;
+            animation: loading 1.4s infinite ease-in-out;
+        }
+
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes loading {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                margin: 10px;
+                border-radius: 15px;
+                min-height: calc(100vh - 20px);
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .input-form {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .submit-btn {
+                width: 100%;
+            }
+            
+            .suggestions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h1>Keerthi MNC's Research Agent</h1>
+            <p>Your intelligent assistant for HR policies, insurance questions, and research</p>
+        </div>
+        
+        <div class="chat-area">
+            {% if response %}
+                <div class="message user">
+                    <div class="message-content">
+                        {{ query }}
+                    </div>
+                </div>
+                <div class="message assistant">
+                    <div class="message-content">
+                        {{ response }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="welcome-message">
+                    <h2>Welcome! How can I help you today?</h2>
+                    <p>Ask me about HR policies, insurance questions, or any research topic.</p>
+                    
+                    <div class="suggestions">
+                        <div class="suggestion-card" onclick="fillQuery('What are the Keerthi MNC company vacation policies?')">
+                            <h4>📋 HR Policies</h4>
+                            <p>Ask about vacation, benefits, and company procedures</p>
+                        </div>
+                        <div class="suggestion-card" onclick="fillQuery('Compare the Keerthi MNC company current hiring trend with industry benchmarks?')">
+                            <h4>💼 General Assistances</h4>
+                            <p>Ask about Hiring trends, with industry benchmarks</p>
+                        </div>
+                        <div class="suggestion-card" onclick="fillQuery('How does Keerthi MNC health insurance coverage work?')">
+                            <h4>🏥 Insurance Questions</h4>
+                            <p>Get details about health, dental, and other coverage</p>
+                        </div>
+                        <div class="suggestion-card" onclick="fillQuery('What are the latest industry trends?')">
+                            <h4>📊 Research & Trends</h4>
+                            <p>Discover market insights and benchmarks</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="loading" id="loading">
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <p>Thinking...</p>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <form method="post" class="input-form" id="chatForm">
+                {% csrf_token %}
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        name="query" 
+                        id="queryInput"
+                        class="query-input"
+                        placeholder="Type your question here..." 
+                        required
+                        autocomplete="off"
+                    />
+                </div>
+                <button type="submit" class="submit-btn">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function fillQuery(text) {
+            document.getElementById('queryInput').value = text;
+            document.getElementById('queryInput').focus();
+        }
+
+        document.getElementById('chatForm').addEventListener('submit', function(e) {
+            const loading = document.getElementById('loading');
+            const submitBtn = document.querySelector('.submit-btn');
+            
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            
+            // Scroll to loading indicator
+            loading.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Auto-resize input and handle Enter key
+        document.getElementById('queryInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('chatForm').submit();
+            }
+        });
+
+        // Focus input on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('queryInput').focus();
+        });
+    </script>
+</body>
+</html>

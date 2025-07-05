@@ -1,0 +1,8 @@
+pyproject.toml
+uv.lock
+__pycache__/
+.python-version
+vars.py
+service_account.json
+.venv/
+chroma_db/
