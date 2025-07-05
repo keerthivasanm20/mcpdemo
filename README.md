@@ -53,11 +53,3 @@ An intelligent, LangChain-powered AI agent built to handle complex internal empl
 | Document Loader  | `knowledge.txt` via LangChain TextLoader |
 | Google Docs API  | For real-time insurance policy answers   |
 
----
-
-## 🛠️ Setup Instructions
-
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/your-repo/internal-research-agent.git
-   cd internal-research-agent
